@@ -1,21 +1,21 @@
 package com.skripsi.presensigps.ui.activity
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.widget.TextView
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.lifecycle.ViewModelProvider
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.skripsi.presensigps.R
-import com.skripsi.presensigps.network.model.LoginModel
-import com.skripsi.presensigps.network.model.SalesInfoModel
-import com.skripsi.presensigps.ui.viewmodel.ScreenState
-import com.skripsi.presensigps.ui.viewmodel.UserViewModel
+import com.skripsi.presensigps.network.ApiClient
+import com.skripsi.presensigps.network.ResponseModel
+import com.skripsi.presensigps.network.UserModel
 import com.skripsi.presensigps.utils.Constant
 import com.skripsi.presensigps.utils.PreferencesHelper
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class LoginActivity : AppCompatActivity() {
 
@@ -24,9 +24,6 @@ class LoginActivity : AppCompatActivity() {
     private val btnLogin: MaterialButton by lazy { findViewById(R.id.btnLogin) }
 
     private lateinit var sharedPref: PreferencesHelper
-    private val viewModel: UserViewModel.LoginViewModel by lazy {
-        ViewModelProvider(this).get(UserViewModel.LoginViewModel::class.java)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,59 +33,122 @@ class LoginActivity : AppCompatActivity() {
             Log.e(this.toString(), "processLogin: Anda sudah login...")
             finish()
         }
-        viewModel.loginLiveData.observe(this, {
-            processLogin(it)
-        })
 
         btnLogin.setOnClickListener {
-            if (inputEmail.text.toString().isEmpty()) {
-                Log.e(this.toString(), "email: tidak boleh kosong")
-            } else if (inputPassword.text.toString().isEmpty()) {
-                Log.e(this.toString(), "password: tidak boleh kosong")
+            val email = inputEmail.text.toString()
+            val password = inputPassword.text.toString()
+
+            if (email.isEmpty()) {
+                Toast.makeText(applicationContext, "Email: tidak boleh kosong", Toast.LENGTH_SHORT)
+                    .show()
+            } else if (password.isEmpty()) {
+                Toast.makeText(
+                    applicationContext,
+                    "Kata sandi: tidak boleh kosong",
+                    Toast.LENGTH_SHORT
+                ).show()
             } else {
-                viewModel.login(inputEmail.text.toString(), inputPassword.text.toString())
+                login(email, password)
             }
         }
     }
 
-    private fun processLogin(state: ScreenState<LoginModel>) {
+    private fun login(email: String, password: String) {
 
-        when (state) {
-            is ScreenState.Loading -> {
-                Log.e(this.toString(), "processLogin: loading...")
-            }
-            is ScreenState.Success -> {
-                if (state.data != null) {
-                    // action when success
-                    Log.e(this.toString(), "processLogin: Success!")
-                    saveSession(state.data)
-                } else {
-                    Log.e(this.toString(), "processLogin: Success Null!")
+        ApiClient.instancesNoToken.apiLogin(email, password)
+            .enqueue(object : Callback<ResponseModel> {
+                override fun onResponse(
+                    call: Call<ResponseModel>,
+                    response: Response<ResponseModel>
+                ) {
+
+                    if (response.isSuccessful) {
+                        val message = response.body()?.message
+                        val status = response.body()?.status
+                        val token = response.body()?.token
+
+                        if (status == true) {
+                            if (token != null) {
+                                sharedPref.put(Constant.PREF_USER_TOKEN, token)
+                                Log.e(this.toString(), "Token: $token")
+
+                                user()
+                            } else {
+                                Toast.makeText(
+                                    applicationContext,
+                                    "Gagal : token is null",
+                                    Toast.LENGTH_SHORT
+                                )
+                                    .show()
+                            }
+                        } else {
+                            Toast.makeText(applicationContext, "Gagal", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        Toast.makeText(
+                            applicationContext,
+                            "Gagal : " + response.code().toString(),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
-            }
-            is ScreenState.Error -> {
-                Log.e(this.toString(), "processLogin: Failed!")
-            }
-        }
+
+                override fun onFailure(call: Call<ResponseModel>, t: Throwable) {
+                    Toast.makeText(
+                        applicationContext,
+                        "Gagal : " + t.message.toString(),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            })
     }
 
-    private fun saveSession(data: LoginModel) {
+    private fun user() {
 
-        sharedPref.put(Constant.PREF_USER_TOKEN, data.data.token)
-        sharedPref.put(Constant.PREF_USER_ID, data.data.id.toString())
-        sharedPref.put(Constant.PREF_USER_NAME, data.data.name)
-        sharedPref.put(Constant.PREF_USER_POSITION, data.data.position)
+        ApiClient.SetContext(this).instances.apiUser().enqueue(
+            object : Callback<ResponseModel> {
+                override fun onResponse(
+                    call: Call<ResponseModel>,
+                    response: Response<ResponseModel>
+                ) {
+
+                    if (response.isSuccessful) {
+                        val message = response.body()?.message
+                        val status = response.body()?.status
+                        val user = response.body()?.user
+
+                        if (status == true) {
+                            saveSession(user)
+                            Log.e(this.toString(), "onResponse: Sukses | " + user?.position)
+                        } else {
+                            Toast.makeText(applicationContext, "Gagal", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        Toast.makeText(
+                            applicationContext,
+                            "Gagal : " + response.code().toString(),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+
+                override fun onFailure(call: Call<ResponseModel>, t: Throwable) {
+                    Toast.makeText(
+                        applicationContext,
+                        "Gagal : " + t.message.toString(),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            })
+    }
+
+    private fun saveSession(user: UserModel?) {
+
+        sharedPref.put(Constant.PREF_USER_ID, user!!.id.toString())
+        sharedPref.put(Constant.PREF_USER_POSITION, user.position)
         sharedPref.put(Constant.PREF_IS_LOGIN, true)
 
-        sharedPref.put(Constant.URL_IMG_USER, data.link_image.user)
-        sharedPref.put(Constant.URL_IMG_PRESENCE, data.link_image.presence)
-        sharedPref.put(Constant.URL_IMG_REPORT, data.link_image.report)
-
-        sharedPref.put(Constant.PREF_OFFICE_LOCATION_LATITUDE, data.office.latitude.toString())
-        sharedPref.put(Constant.PREF_OFFICE_LOCATION_LONGITUDE, data.office.longitude.toString())
-        sharedPref.put(Constant.PREF_OFFICE_LOCATION_RADIUS, data.office.radius.toString())
-
-        if (data.data.position == "admin" || data.data.position == "manager") {
+        if (user.position == "admin" || user.position == "manager") {
             startActivity(
                 Intent(
                     this,

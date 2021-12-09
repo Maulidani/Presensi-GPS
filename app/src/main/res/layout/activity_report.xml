@@ -11,6 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="24dp"
+        android:id="@+id/icBack"
         android:src="@drawable/ic_back"
         app:layout_constraintBottom_toBottomOf="@id/tvReport"
         app:layout_constraintLeft_toLeftOf="parent"

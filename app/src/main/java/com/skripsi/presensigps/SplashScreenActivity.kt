@@ -25,7 +25,7 @@ class SplashScreenActivity : AppCompatActivity() {
             delay(2500)
 
             if (sharedPref.getBoolean(Constant.PREF_IS_LOGIN)) {
-                Log.e(this.toString(), "processLogin: Anda sudah login...")
+                Log.e(this.toString(), "Anda sudah login")
                 if (userPosition == "admin" || userPosition == "manager") {
                     startActivity(
                         Intent(

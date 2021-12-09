@@ -20,7 +20,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PresensiGPS"
         android:usesCleartextTraffic="true">
-        <activity android:name=".ui.activity.AllHistoryActivity"></activity>
+        <activity android:name=".ui.activity.PhotoActivity"></activity>
+        <activity android:name=".ui.activity.AllHistoryActivity" />
         <activity android:name=".ui.activity.MainActivity" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.

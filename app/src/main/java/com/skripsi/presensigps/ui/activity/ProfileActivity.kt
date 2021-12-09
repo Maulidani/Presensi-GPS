@@ -1,78 +1,184 @@
 package com.skripsi.presensigps.ui.activity
 
-import androidx.appcompat.app.AppCompatActivity
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.lifecycle.ViewModelProvider
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.LinearLayoutCompat
 import com.skripsi.presensigps.R
-import com.skripsi.presensigps.network.model.DataUserModel
-import com.skripsi.presensigps.network.model.UserModel
-import com.skripsi.presensigps.ui.viewmodel.ScreenState
-import com.skripsi.presensigps.ui.viewmodel.UserViewModel
+import com.skripsi.presensigps.network.ApiClient
+import com.skripsi.presensigps.network.ResponseModel
+import com.skripsi.presensigps.network.UserModel
 import com.skripsi.presensigps.utils.Constant
 import com.skripsi.presensigps.utils.PreferencesHelper
 import com.squareup.picasso.Picasso
 import de.hdodenhof.circleimageview.CircleImageView
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class ProfileActivity : AppCompatActivity() {
+    private lateinit var sharedPref: PreferencesHelper
+
+    private val back: ImageView by lazy { findViewById(R.id.icBack) }
+    private val dataProfile: LinearLayoutCompat by lazy { findViewById(R.id.parentDataProfile) }
     private val img: CircleImageView by lazy { findViewById(R.id.imgProfile) }
     private val tvName: TextView by lazy { findViewById(R.id.tvName) }
     private val tvPosition: TextView by lazy { findViewById(R.id.tvPosition) }
     private val tvEmail: TextView by lazy { findViewById(R.id.tvEmail) }
-    private val tvpassword: TextView by lazy { findViewById(R.id.tvPassword) }
-
-    private lateinit var sharedPref: PreferencesHelper
-    private val viewModel: UserViewModel.UserInfoViewModel by lazy {
-        ViewModelProvider(this).get(UserViewModel.UserInfoViewModel::class.java)
-    }
+    private val tvPassword: TextView by lazy { findViewById(R.id.tvPassword) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
-        sharedPref = PreferencesHelper(this)
-        val token = sharedPref.getString(Constant.PREF_USER_TOKEN)
 
-        viewModel.user(token.toString())
-        viewModel.userLiveData.observe(this, {
-            process(it)
-            viewModel.user(token.toString())
-        })
+        sharedPref = PreferencesHelper(this)
+
+        back.setOnClickListener { finish() }
 
     }
 
-    private fun process(state: ScreenState<UserModel>) {
+    override fun onResume() {
+        super.onResume()
 
-        when (state) {
-            is ScreenState.Loading -> {
-                Log.e(this.toString(), "processLogin: loading...")
-            }
-            is ScreenState.Success -> {
-                if (state.data != null) {
-                    // action when success
-                    Log.e(this.toString(), "processLogin: Success!")
-                    init(state.data)
-                } else {
-                    Log.e(this.toString(), "processLogin: Success Null!")
-                }
-            }
-            is ScreenState.Error -> {
-                Log.e(this.toString(), "processLogin: Failed!")
-            }
+        val userPosition = sharedPref.getString(Constant.PREF_USER_POSITION)
+
+        if (userPosition == "admin" || userPosition == "manager") {
+            user()
+        } else {
+
+            val intentId = intent.getIntExtra("id", 0)
+            val intentName = intent.getStringExtra("name")
+            val intentPosition = intent.getStringExtra("position")
+            val intentEmail = intent.getStringExtra("email")
+            val intentPassword = intent.getStringExtra("password")
+            val intentImg = intent.getStringExtra("image")
+
         }
     }
 
-    private fun init(data: UserModel) {
+    private fun user() {
 
-        val imgUserEndPoint = sharedPref.getString(Constant.URL_IMG_USER)
+        ApiClient.SetContext(this).instances.apiUser().enqueue(
+            object : Callback<ResponseModel> {
+                override fun onResponse(
+                    call: Call<ResponseModel>,
+                    response: Response<ResponseModel>
+                ) {
 
-        Picasso.with(this).load(Constant.BASE_URL + imgUserEndPoint + data.data.image)
-            .into(img)
+                    if (response.isSuccessful) {
+                        val message = response.body()?.message
+                        val status = response.body()?.status
+                        val user = response.body()?.user
 
-        tvName.text = data.data.name
-        tvPosition.text = data.data.position
-        tvEmail.text = data.data.email
-        tvpassword.text = data.data.password
+                        if (status == true) {
+
+                            tvName.text = user?.name
+                            tvPosition.text = user?.position
+                            tvEmail.text = user?.email
+                            tvPassword.text = user?.password
+                            Picasso.with(applicationContext)
+                                .load("${Constant.URL_IMG_USER}${user?.image}")
+                                .into(img)
+
+                            Log.e(this.toString(), "onResponse: Sukses | " + user?.position)
+
+                            if (user != null) {
+                                val userPosition = sharedPref.getString(Constant.PREF_USER_POSITION)
+
+                                if (userPosition == "admin" || userPosition == "manager") {
+
+                                    img.setOnClickListener {
+                                        optionAlert(user.image)
+                                    }
+                                    dataProfile.setOnClickListener {
+                                        startActivity(
+                                            Intent(
+                                                applicationContext,
+                                                EditProfileActivity::class.java
+                                            )
+                                                .putExtra("id", user.id)
+                                                .putExtra("name", user.name)
+                                                .putExtra("position", user.position)
+                                                .putExtra("email", user.email)
+                                                .putExtra("password", user.password)
+                                        )
+                                    }
+                                }
+                            }
+                        } else {
+                            Toast.makeText(applicationContext, "Gagal", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        Toast.makeText(
+                            applicationContext,
+                            "Gagal : " + response.code().toString(),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+
+                override fun onFailure(call: Call<ResponseModel>, t: Throwable) {
+                    Toast.makeText(
+                        applicationContext,
+                        "Gagal : " + t.message.toString(),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            })
     }
 
+    private fun optionAlert(img: String) {
+        val builder: AlertDialog.Builder = AlertDialog.Builder(this)
+        builder.setTitle("Aksi")
+
+        val userId = sharedPref.getString(Constant.PREF_USER_ID)
+
+        val options = arrayOf("Lihat foto", "Ganti foto")
+        builder.setItems(
+            options
+        ) { _, which ->
+            when (which) {
+                0 -> {
+                    startActivity(
+                        Intent(
+                            applicationContext,
+                            PhotoActivity::class.java
+                        ).putExtra("image", img)
+                    )
+                }
+                1 -> {
+                    startActivity(
+                        Intent(
+                            applicationContext,
+                            EditPhotoActivity::class.java
+                        ).putExtra("image", img).putExtra("id", userId)
+                    )
+                }
+            }
+        }
+        val dialog: AlertDialog = builder.create()
+        dialog.show()
+
+    }
+
+//    private fun deleteAlert(itemView: View, id: Int, token: String?) {
+//        val builder = AlertDialog.Builder(itemView.context)
+//        builder.setTitle("Hapus")
+//        builder.setMessage("Hapus produk ini ?")
+//
+//        builder.setPositiveButton("Ya") { _, _ ->
+//            delete(itemView, id, token)
+//        }
+//
+//        builder.setNegativeButton("Tidak") { _, _ ->
+//            // cancel
+//        }
+//        builder.show()
+//    }
 }

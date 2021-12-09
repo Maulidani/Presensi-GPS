@@ -2,20 +2,16 @@ package com.skripsi.presensigps.ui.activity
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.location.Location
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Looper
-import android.provider.MediaStore
 import android.util.Log
 import android.view.View
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.common.api.ResolvableApiException
@@ -23,17 +19,19 @@ import com.google.android.gms.location.*
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.CircleOptions
-
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.Task
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.skripsi.presensigps.R
-import com.skripsi.presensigps.utils.Constant
+import com.skripsi.presensigps.utils.PreferencesHelper
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private val TAG = this.toString()
+
+    private lateinit var sharedPref: PreferencesHelper
+    private lateinit var userId: String
 
     private val btnMyLocation: FloatingActionButton by lazy { findViewById(R.id.fabMyLocation) }
     private val btnOfficeLocation: FloatingActionButton by lazy { findViewById(R.id.fabOfficeLocation) }
@@ -41,6 +39,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private val btnReport: MaterialButton by lazy { findViewById(R.id.btnReport) }
 
     private val locationRequestCode = 1001
+    private val cameraPermissionCode = 1
 
     private lateinit var mMap: GoogleMap
     private lateinit var mFusedLocationProviderClient: FusedLocationProviderClient
@@ -149,6 +148,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    lateinit var type: String
+
     //lifecycle
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -158,7 +159,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
-        val type = intent.getStringExtra("type")
+        sharedPref = PreferencesHelper(this)
+//        userId = sharedPref.getString(Constant.PREF_USER_ID).toString()
+
+        type = intent.getStringExtra("type").toString()
         latOffice = intent.getStringExtra("latitude")?.toDouble() ?: 0.0
         longOffice = intent.getStringExtra("longitude")?.toDouble() ?: 0.0
         radius = intent.getStringExtra("radius")?.toDouble() ?: 0.0
@@ -167,10 +171,23 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             btnOfficeLocation.visibility = View.GONE
             btnPresence.visibility = View.INVISIBLE
             btnReport.visibility = View.VISIBLE
-        } else if(type == "presence"){
+
+            btnReport.setOnClickListener {
+//                openCamera()
+            }
+
+        } else if (type == "presence") {
             btnOfficeLocation.visibility = View.VISIBLE
             btnPresence.visibility = View.VISIBLE
             btnReport.visibility = View.GONE
+
+            btnPresence.setOnClickListener {
+                if (distance <= radius) {
+//                    openCamera()
+                } else {
+                    Log.e("distance:", "  diluar kawasan")
+                }
+            }
         }
 
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
@@ -194,14 +211,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             askLocationPermission()
         }
 
-        // register camera
-//        resultLauncher =
-//            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-//                if (it.resultCode == Activity.RESULT_OK) {
-//                    val data = it.data
-//                    thumbNail = data?.extras?.get("data") as Bitmap
-//                }
-//            }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
     }
 
     override fun onStop() {
@@ -272,6 +286,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         )
     }
 
+    private var thumbNail: Bitmap? = null
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -283,13 +299,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 checkSettingAndStartLocationUpdates()
             }
         }
-
-//        if (requestCode == cameraPermissionCode) {
-//            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//                val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-//                resultLauncher.launch(intent)
-//            }
-//        }
     }
 
 }

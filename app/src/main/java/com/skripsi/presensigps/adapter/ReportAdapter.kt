@@ -7,24 +7,19 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.skripsi.presensigps.R
-import com.skripsi.presensigps.network.model.DataPresenceModel
-import com.skripsi.presensigps.network.model.DataReportModel
-import com.skripsi.presensigps.utils.Constant
+import com.skripsi.presensigps.network.DataModel
 import com.skripsi.presensigps.utils.PreferencesHelper
-import com.squareup.picasso.Picasso
-import de.hdodenhof.circleimageview.CircleImageView
 
 
-class ReportAdapter(private val list: List<DataReportModel>) :
+class ReportAdapter(private val list: List<DataModel>) :
     RecyclerView.Adapter<ReportAdapter.ReportViewlHoder>() {
 
     inner class ReportViewlHoder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-        fun bindData(result: DataReportModel) {
+        fun bindData(result: DataModel) {
 
             val sharedPref: PreferencesHelper = PreferencesHelper(itemView.context)
-            val nameLogin = sharedPref.getString(Constant.PREF_USER_NAME)
-            val imgEndPoint = sharedPref.getString(Constant.URL_IMG_REPORT)
+//            val nameLogin = sharedPref.getString(Constant.PREF_USER_NAME)
 
             val name = itemView.findViewById<TextView>(R.id.tvName)
             val date = itemView.findViewById<TextView>(R.id.tvDate)
@@ -35,23 +30,23 @@ class ReportAdapter(private val list: List<DataReportModel>) :
             val longitude = itemView.findViewById<TextView>(R.id.tvLongitude)
             val note = itemView.findViewById<TextView>(R.id.tvNote)
             val img = itemView.findViewById<ImageView>(R.id.imgReport)
-
-            Picasso.with(itemView.context).load(Constant.BASE_URL + imgEndPoint + result.image)
-                .into(img)
-            name.text = nameLogin
-            date.text = result.created_at
+//
+//            Picasso.with(itemView.context).load("${Constant.URL_IMG_REPORT}${result.image}")
+//                .into(img)
+//            name.text = nameLogin
+//            date.text = result.created_at
 //            time.text = result.created_at
-            latitude.text = result.latitude
-            longitude.text = result.longitude
-            note.text = result.note
-
-            if (result.status == 0) {
-                statusNotVerified.visibility = View.VISIBLE
-                statusVerified.visibility = View.INVISIBLE
-            } else {
-                statusNotVerified.visibility = View.INVISIBLE
-                statusVerified.visibility = View.VISIBLE
-            }
+//            latitude.text = result.latitude
+//            longitude.text = result.longitude
+//            note.text = result.note
+//
+//            if (result.status == 0) {
+//                statusNotVerified.visibility = View.VISIBLE
+//                statusVerified.visibility = View.INVISIBLE
+//            } else {
+//                statusNotVerified.visibility = View.INVISIBLE
+//                statusVerified.visibility = View.VISIBLE
+//            }
 
         }
     }

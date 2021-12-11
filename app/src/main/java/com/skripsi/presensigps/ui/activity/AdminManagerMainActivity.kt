@@ -7,11 +7,15 @@ import android.util.Log
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import com.skripsi.presensigps.R
 import com.skripsi.presensigps.network.ApiClient
 import com.skripsi.presensigps.network.ResponseModel
+import com.skripsi.presensigps.network.UserModel
 import com.skripsi.presensigps.utils.Constant
+import com.skripsi.presensigps.utils.PreferencesHelper
 import com.squareup.picasso.Picasso
 import de.hdodenhof.circleimageview.CircleImageView
 import retrofit2.Call
@@ -19,6 +23,8 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class AdminManagerMainActivity : AppCompatActivity() {
+    private lateinit var sharedPref: PreferencesHelper
+
     private val presenceMenu: ConstraintLayout by lazy { findViewById(R.id.parentPresence) }
     private val reportMenu: ConstraintLayout by lazy { findViewById(R.id.parentReport) }
     private val userMenu: ConstraintLayout by lazy { findViewById(R.id.parentUser) }
@@ -30,14 +36,34 @@ class AdminManagerMainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_admin_manager_main)
+        sharedPref = PreferencesHelper(this)
 
         setting.setOnClickListener {
-            startActivity(
-                Intent(
-                    this,
-                    ProfileActivity::class.java
-                )
-            )
+
+            val builder: AlertDialog.Builder = AlertDialog.Builder(this)
+            builder.setTitle("Aksi")
+
+            val options = arrayOf("Lihat profil", "Logout")
+            builder.setItems(
+                options
+            ) { _, which ->
+                when (which) {
+                    0 -> {
+                        startActivity(
+                            Intent(
+                                this,
+                                ProfileActivity::class.java
+                            )
+                        )
+                    }
+                    1 -> {
+                        logout()
+                    }
+                }
+            }
+            val dialog: AlertDialog = builder.create()
+            dialog.show()
+
         }
 
         presenceMenu.setOnClickListener {
@@ -115,6 +141,44 @@ class AdminManagerMainActivity : AppCompatActivity() {
                     ).show()
                 }
             })
+    }
+
+    private fun logout() {
+
+        ApiClient.SetContext(this).instances.apiLogout().enqueue(object : Callback<ResponseModel> {
+            override fun onResponse(
+                call: Call<ResponseModel>,
+                response: Response<ResponseModel>
+            ) {
+                if (response.isSuccessful) {
+                    val message = response.body()?.message
+                    val status = response.body()?.status
+
+                    if (status == true) {
+                        sharedPref.logout()
+                        startActivity(Intent(applicationContext, LoginActivity::class.java))
+                        finish()
+                    } else {
+                        Toast.makeText(applicationContext, "Gagal", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    Toast.makeText(
+                        applicationContext,
+                        "Gagal : " + response.code().toString(),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+
+            override fun onFailure(call: Call<ResponseModel>, t: Throwable) {
+                Toast.makeText(
+                    applicationContext,
+                    "Gagal : " + t.message.toString(),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
+        })
     }
 
 }

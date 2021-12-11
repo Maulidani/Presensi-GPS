@@ -201,4 +201,17 @@ class UserController extends Controller
             ]);
         }
     }
+
+    public function showUser(Request $request)
+    {
+        $user = User::where('position', $request->position)
+            ->orderBy('created_at', 'DESC')
+            ->get();
+
+        return response()->json([
+            'message' => 'Success',
+            'status' => true,
+            'list_user' => $user
+        ]);
+    }
 }

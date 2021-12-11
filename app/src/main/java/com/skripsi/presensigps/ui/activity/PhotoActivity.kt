@@ -18,7 +18,7 @@ class PhotoActivity : AppCompatActivity() {
         val intentImg = intent.getStringExtra("image")
 
         Picasso.with(applicationContext)
-            .load("${Constant.URL_IMG_USER}${intentImg}")
+            .load(intentImg)
             .into(img)
     }
 }

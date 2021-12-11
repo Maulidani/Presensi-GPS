@@ -36,12 +36,6 @@ class EditProfileActivity : AppCompatActivity() {
         sharedPref = PreferencesHelper(this)
         val userPosition = sharedPref.getString(Constant.PREF_USER_POSITION)
 
-        if (userPosition != "admin") {
-            val adapterPosition =
-                ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, positionList)
-            inputPosition.setAdapter(adapterPosition)
-        }
-
         val intentId = intent.getIntExtra("id", 0)
         val intentName = intent.getStringExtra("name")
         val intentPosition = intent.getStringExtra("position")
@@ -52,6 +46,12 @@ class EditProfileActivity : AppCompatActivity() {
         inputPosition.setText(intentPosition)
         inputEmail.setText(intentEmail)
         inputPassword.setText(intentPassword)
+
+        if (intentPosition != "admin") {
+            val adapterPosition =
+                ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, positionList)
+            inputPosition.setAdapter(adapterPosition)
+        }
 
         back.setOnClickListener { finish() }
 

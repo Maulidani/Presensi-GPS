@@ -2,18 +2,23 @@ package com.skripsi.presensigps.ui.activity
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.graphics.Color
 import android.location.Location
 import android.os.Bundle
 import android.os.Looper
 import android.util.Log
 import android.view.View
+import android.widget.Toast
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.*
@@ -25,7 +30,17 @@ import com.google.android.gms.tasks.Task
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.skripsi.presensigps.R
+import com.skripsi.presensigps.network.ApiClient
+import com.skripsi.presensigps.network.ResponseModel
 import com.skripsi.presensigps.utils.PreferencesHelper
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.io.File
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private val TAG = this.toString()
@@ -55,6 +70,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private var cameraZoom: Boolean = false
     private var distance: Float = 0.1f
+
+    private var reqBody: RequestBody? = null
+    private var partImage: MultipartBody.Part? = null
 
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(locationResultCallback: LocationResult) {
@@ -163,9 +181,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 //        userId = sharedPref.getString(Constant.PREF_USER_ID).toString()
 
         type = intent.getStringExtra("type").toString()
-        latOffice = intent.getStringExtra("latitude")?.toDouble() ?: 0.0
-        longOffice = intent.getStringExtra("longitude")?.toDouble() ?: 0.0
-        radius = intent.getStringExtra("radius")?.toDouble() ?: 0.0
 
         if (type == "report") {
             btnOfficeLocation.visibility = View.GONE
@@ -173,21 +188,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             btnReport.visibility = View.VISIBLE
 
             btnReport.setOnClickListener {
-//                openCamera()
+                startActivity(
+                    Intent(this, SendReportActivity::class.java)
+                        .putExtra("latitude", myLocation.latitude)
+                        .putExtra("longitude", myLocation.longitude)
+                )
             }
 
         } else if (type == "presence") {
+            getLocation()
+
             btnOfficeLocation.visibility = View.VISIBLE
             btnPresence.visibility = View.VISIBLE
             btnReport.visibility = View.GONE
 
-            btnPresence.setOnClickListener {
-                if (distance <= radius) {
-//                    openCamera()
-                } else {
-                    Log.e("distance:", "  diluar kawasan")
-                }
-            }
         }
 
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
@@ -286,8 +300,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         )
     }
 
-    private var thumbNail: Bitmap? = null
-
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -301,4 +313,128 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    private fun getLocation() {
+
+        ApiClient.SetContext(this).instances.apiGetLocation().enqueue(object :
+            Callback<ResponseModel> {
+            override fun onResponse(
+                call: Call<ResponseModel>,
+                response: Response<ResponseModel>
+            ) {
+                if (response.isSuccessful) {
+                    val message = response.body()?.message
+                    val status = response.body()?.status
+                    val data = response.body()?.data_today
+
+                    if (status == true) {
+
+                        latOffice = data?.latitude!!
+                        longOffice = data.longitude
+                        radius = data.radius
+
+                        btnPresence.setOnClickListener {
+                            if (distance <= radius) {
+
+                                ImagePicker.with(this@MapsActivity)
+                                    .cameraOnly()
+                                    .cropSquare()
+                                    .compress(1024)         //Final image size will be less than 1 MB(Optional)
+                                    .createIntent { intent ->
+                                        startForProfileImageResult.launch(intent)
+                                    }
+                            } else {
+                                Log.e("distance:", "  diluar kawasan")
+                            }
+                        }
+
+                    } else {
+                        Toast.makeText(
+                            applicationContext,
+                            "Gagal",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                } else {
+                    Toast.makeText(
+                        applicationContext,
+                        "Gagal : " + response.code().toString(),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+
+            override fun onFailure(call: Call<ResponseModel>, t: Throwable) {
+                Toast.makeText(
+                    applicationContext,
+                    "Gagal : " + t.message.toString(),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
+        })
+    }
+
+    private val startForProfileImageResult =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+            val resultCode = result.resultCode
+            val data = result.data
+
+            if (resultCode == Activity.RESULT_OK) {
+                //Image Uri will not be null for RESULT_OK
+                val fileUri = data?.data!!
+//                    imageView.setImageURI(fileUri)
+
+                val image: File = File(fileUri.path!!)
+
+                reqBody = image.asRequestBody("image/*".toMediaTypeOrNull())
+
+                partImage = MultipartBody.Part.createFormData("image", image.name, reqBody!!)
+
+                addPresence(partImage)
+            } else if (resultCode == ImagePicker.RESULT_ERROR) {
+                Toast.makeText(applicationContext, ImagePicker.getError(data), Toast.LENGTH_SHORT)
+                    .show()
+            } else {
+                Toast.makeText(applicationContext, "Task Cancelled", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+    private fun addPresence(img: MultipartBody.Part?) {
+
+        if (img != null) {
+            ApiClient.SetContext(this).instances.apiAddPresence(img).enqueue(object :
+                Callback<ResponseModel> {
+                override fun onResponse(
+                    call: Call<ResponseModel>,
+                    response: Response<ResponseModel>
+                ) {
+                    if (response.isSuccessful) {
+                        val message = response.body()?.message
+                        val status = response.body()?.status
+
+                        if (status == true) {
+                            finish()
+                        } else {
+                            Toast.makeText(applicationContext, "Gagal", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        Toast.makeText(
+                            applicationContext,
+                            "Gagal : " + response.code().toString(),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+
+                override fun onFailure(call: Call<ResponseModel>, t: Throwable) {
+                    Toast.makeText(
+                        applicationContext,
+                        "Gagal : " + t.message.toString(),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+            })
+        }
+    }
 }

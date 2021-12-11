@@ -29,7 +29,7 @@ class PresenceController extends Controller
 
         return response()->json([
             'message' => 'Success',
-            'errors' => false,
+            'status' => true,
             'data' => $presence,
         ]);
     }
@@ -159,7 +159,7 @@ class PresenceController extends Controller
             ->first();
 
         $back->forceFill([
-            'back_at' => now(),
+            'back_at' =>date("H", strtotime('now')),
             'status' => 1,
         ])->save();
 
@@ -223,8 +223,33 @@ class PresenceController extends Controller
 
         return response()->json([
             'message' => 'success',
-            'errors' => false,
-            'data' => $office,
+            'status' => true,
+            'data_today' => $office,
         ]);
+    }
+
+    public function getPresenceTOday(Request $request)
+    {
+        $exist = Presence::where('user_id', '=', $request->user()->id)
+            ->whereDate('created_at', today())
+            ->exists();
+
+        if ($exist) {
+           $presence =  Presence::where('user_id', '=', $request->user()->id)
+            ->whereDate('created_at', today())
+            ->first();
+
+            return response()->json([
+                'message' => 'Success',
+                'status' => true,
+                'data_today' => $presence,
+            ]);
+        } else {
+            return response()->json([
+                'message' => 'Failed',
+                'status' => false,
+                'data_today' => null,
+            ]);
+        }
     }
 }

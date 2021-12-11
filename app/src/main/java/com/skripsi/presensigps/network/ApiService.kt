@@ -18,6 +18,10 @@ interface ApiService {
         @Field("password") password: String
     ): Call<ResponseModel>
 
+    @POST("logout")
+    fun apiLogout(
+    ): Call<ResponseModel>
+
     @Multipart
     @POST("register")
     fun apiAdduser(
@@ -42,6 +46,67 @@ interface ApiService {
     @POST("edit-image-user")
     fun apiEditImgUser(
         @Part("id") id: RequestBody,
+        @Part image: MultipartBody.Part,
+    ): Call<ResponseModel>
+
+    @FormUrlEncoded
+    @POST("show-user")
+    fun apiShowUser(
+        @Field("position") position: String,
+    ): Call<ResponseModel>
+
+    @FormUrlEncoded
+    @POST("delete-user")
+    fun apiDeleteUser(
+        @Field("id") id: Int,
+    ): Call<ResponseModel>
+
+    @POST("show-report")
+    fun apiShowReport(
+    ): Call<ResponseModel>
+
+    @FormUrlEncoded
+    @POST("verify-report")
+    fun apiVerifyReport(
+        @Field("id") id: Int,
+        @Field("status") status: Int,
+    ): Call<ResponseModel>
+
+    @FormUrlEncoded
+
+    @POST("verify-presence")
+    fun apiVerifyPresence(
+        @Field("id") id: Int,
+        @Field("status") status: Int,
+    ): Call<ResponseModel>
+
+    @POST("show-presence")
+    fun apiShowPresence(
+    ): Call<ResponseModel>
+
+    @GET("get-presence-today")
+    fun apiGetPresenceToday(): Call<ResponseModel>
+
+    @GET("location-presence")
+    fun apiGetLocation(): Call<ResponseModel>
+
+    @Multipart
+    @POST("add-presence")
+    fun apiAddPresence(
+        @Part image: MultipartBody.Part,
+    ): Call<ResponseModel>
+
+    @POST("back-presence")
+    fun apiBackPresence(
+    ): Call<ResponseModel>
+
+    @Multipart
+    @POST("add-report")
+    fun apiAddReport(
+        @Part("name") name: RequestBody,
+        @Part("latitude") latitude: RequestBody,
+        @Part("longitude") longitude: RequestBody,
+        @Part("note") note: RequestBody,
         @Part image: MultipartBody.Part,
     ): Call<ResponseModel>
 }

@@ -28,6 +28,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('edit-user', [UserController::class, 'edit']);
     Route::post('edit-image-user', [UserController::class, 'editImage']);
     Route::post('delete-user', [UserController::class, 'deleteUser']);
+    Route::post('show-user', [UserController::class, 'showUser']);
 
     //presence
     Route::post('show-presence', [PresenceController::class, 'showPresence']);
@@ -37,6 +38,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('verify-presence', [PresenceController::class, 'verificationPresence']);
     Route::post('delete-presence', [PresenceController::class, 'deletePresence']);
     Route::get('location-presence', [PresenceController::class, 'getLocation']);
+    Route::get('get-presence-today', [PresenceController::class, 'getPresenceTOday']);
 
     //report
     Route::post('show-report', [ReportController::class, 'showReport']);

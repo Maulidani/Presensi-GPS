@@ -28,7 +28,7 @@ class ReportController extends Controller
 
         return response()->json([
             'message' => 'Success',
-            'errors' => false,
+            'status' =>true,
             'data' => $presence,
         ]);
     }

@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import com.skripsi.presensigps.R
+import com.skripsi.presensigps.ui.fragment.PresenceFragment
 import com.skripsi.presensigps.ui.fragment.PresenceViewPagerFragment
 
 class PresenceActivity : AppCompatActivity() {
@@ -13,7 +14,7 @@ class PresenceActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_presence)
-        loadFragment(PresenceViewPagerFragment())
+        loadFragment(PresenceFragment("all"))
 
         back.setOnClickListener { finish() }
     }

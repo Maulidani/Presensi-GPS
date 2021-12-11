@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.core.content.ContextCompat
 import com.skripsi.presensigps.R
 import com.skripsi.presensigps.network.ApiClient
 import com.skripsi.presensigps.network.ResponseModel
@@ -39,6 +40,54 @@ class ProfileActivity : AppCompatActivity() {
 
         sharedPref = PreferencesHelper(this)
 
+        val userPosition = sharedPref.getString(Constant.PREF_USER_POSITION)
+
+        val intentId = intent.getIntExtra("id", 0)
+        val intentName = intent.getStringExtra("name")
+        val intentPosition = intent.getStringExtra("position")
+        val intentEmail = intent.getStringExtra("email")
+        val intentPassword = intent.getStringExtra("password")
+        val intentImg = intent.getStringExtra("image")
+
+        if (intentId == 0) {
+            user()
+
+        } else {
+
+            tvName.text = intentName
+            tvPosition.text = intentPosition
+            tvEmail.text = intentEmail
+            tvPassword.text = intentPassword
+            Picasso.with(applicationContext)
+                .load("${Constant.URL_IMG_USER}${intentImg}")
+                .into(img)
+
+
+
+            if (userPosition == "admin") {
+                img.setOnClickListener {
+                    if (intentImg != null) {
+                        optionAlert(intentImg, intentId.toString())
+                    }
+
+                }
+
+                dataProfile.setOnClickListener {
+                    startActivity(
+                        Intent(
+                            applicationContext,
+                            EditProfileActivity::class.java
+                        )
+                            .putExtra("id", intentId)
+                            .putExtra("name", intentName)
+                            .putExtra("position", intentPosition)
+                            .putExtra("email", intentEmail)
+                            .putExtra("password", intentPassword)
+                    )
+                }
+            }
+        }
+
         back.setOnClickListener { finish() }
 
     }
@@ -46,19 +95,9 @@ class ProfileActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        val userPosition = sharedPref.getString(Constant.PREF_USER_POSITION)
-
-        if (userPosition == "admin" || userPosition == "manager") {
+        val intentId = intent.getIntExtra("id", 0)
+        if (intentId == 0) {
             user()
-        } else {
-
-            val intentId = intent.getIntExtra("id", 0)
-            val intentName = intent.getStringExtra("name")
-            val intentPosition = intent.getStringExtra("position")
-            val intentEmail = intent.getStringExtra("email")
-            val intentPassword = intent.getStringExtra("password")
-            val intentImg = intent.getStringExtra("image")
-
         }
     }
 
@@ -91,10 +130,12 @@ class ProfileActivity : AppCompatActivity() {
                             if (user != null) {
                                 val userPosition = sharedPref.getString(Constant.PREF_USER_POSITION)
 
-                                if (userPosition == "admin" || userPosition == "manager") {
+                                if (userPosition == "admin") {
+                                    val userId = sharedPref.getString(Constant.PREF_USER_ID)
 
                                     img.setOnClickListener {
-                                        optionAlert(user.image)
+
+                                        optionAlert(user.image, userId!!)
                                     }
                                     dataProfile.setOnClickListener {
                                         startActivity(
@@ -107,6 +148,18 @@ class ProfileActivity : AppCompatActivity() {
                                                 .putExtra("position", user.position)
                                                 .putExtra("email", user.email)
                                                 .putExtra("password", user.password)
+                                        )
+                                    }
+                                } else {
+                                    img.setOnClickListener {
+                                        startActivity(
+                                            Intent(
+                                                applicationContext,
+                                                PhotoActivity::class.java
+                                            ).putExtra(
+                                                "image",
+                                                "${Constant.URL_IMG_USER}${user.image}"
+                                            )
                                         )
                                     }
                                 }
@@ -133,11 +186,9 @@ class ProfileActivity : AppCompatActivity() {
             })
     }
 
-    private fun optionAlert(img: String) {
+    private fun optionAlert(img: String, userId: String) {
         val builder: AlertDialog.Builder = AlertDialog.Builder(this)
         builder.setTitle("Aksi")
-
-        val userId = sharedPref.getString(Constant.PREF_USER_ID)
 
         val options = arrayOf("Lihat foto", "Ganti foto")
         builder.setItems(
@@ -149,7 +200,7 @@ class ProfileActivity : AppCompatActivity() {
                         Intent(
                             applicationContext,
                             PhotoActivity::class.java
-                        ).putExtra("image", img)
+                        ).putExtra("image", "${Constant.URL_IMG_USER}$img")
                     )
                 }
                 1 -> {
@@ -162,6 +213,7 @@ class ProfileActivity : AppCompatActivity() {
                 }
             }
         }
+
         val dialog: AlertDialog = builder.create()
         dialog.show()
 

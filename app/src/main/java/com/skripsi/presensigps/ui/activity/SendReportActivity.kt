@@ -28,12 +28,14 @@ class SendReportActivity : AppCompatActivity() {
     val btnSendReport: MaterialButton by lazy { findViewById(R.id.btnSendReport) }
     val nameLoc: TextInputEditText by lazy { findViewById(R.id.inputName) }
     val note: TextInputEditText by lazy { findViewById(R.id.inputNote) }
+    val lat: TextView by lazy { findViewById(R.id.tvLatitude) }
+    val long: TextView by lazy { findViewById(R.id.tvLongitude) }
 
     private var reqBody: RequestBody? = null
     private var partImage: MultipartBody.Part? = null
 
-    var latitude = intent.getDoubleExtra("latitude", 0.0)
-    var longitude = intent.getDoubleExtra("longitude", 0.0)
+    var latitude = 0.0
+    var longitude = 0.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,6 +43,9 @@ class SendReportActivity : AppCompatActivity() {
 
         latitude = intent.getDoubleExtra("latitude", 0.0)
         longitude = intent.getDoubleExtra("longitude", 0.0)
+
+        lat.text = latitude.toString()
+        long.text = longitude.toString()
 
         btnSendReport.setOnClickListener {
             if (!nameLoc.text.isNullOrEmpty()) {

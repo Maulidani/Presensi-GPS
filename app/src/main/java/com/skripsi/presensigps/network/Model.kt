@@ -27,6 +27,7 @@ data class DataModel(
     val status: Int,
     val off: Int,
     val back_at: Int,
+    val count: Int,
 )
 
 data class UserModel(

@@ -12,6 +12,7 @@ import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.skripsi.presensigps.R
+import com.skripsi.presensigps.adapter.PresenceAdapter
 import com.skripsi.presensigps.adapter.ReportAdapter
 import com.skripsi.presensigps.adapter.UserAdapter
 import com.skripsi.presensigps.adapter.ViewPagerAdapter
@@ -21,7 +22,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class ReportFragment(val s:String) : Fragment() {
+class ReportFragment(val s: String) : Fragment(), ReportAdapter.IUserRecycler {
     private val rv: RecyclerView by lazy { requireActivity().findViewById(R.id.rvReport) }
 
     override fun onCreateView(
@@ -37,13 +38,10 @@ class ReportFragment(val s:String) : Fragment() {
 
         show()
     }
+
     override fun onResume() {
         super.onResume()
-
-//        when (s) {
-//            "today" -> showUser()
-//            "all" -> showUser()
-//        }
+        show()
     }
 
     private fun show() {
@@ -58,7 +56,7 @@ class ReportFragment(val s:String) : Fragment() {
 
                     if (status == true) {
 
-                        val adapter = data?.let { ReportAdapter(it) }
+                        val adapter = data?.let { ReportAdapter(it, this@ReportFragment) }
                         rv.layoutManager = LinearLayoutManager(requireContext())
                         rv.adapter = adapter
 
@@ -83,5 +81,9 @@ class ReportFragment(val s:String) : Fragment() {
             }
 
         })
+    }
+
+    override fun refreshView(onUpdate: Boolean) {
+        show()
     }
 }

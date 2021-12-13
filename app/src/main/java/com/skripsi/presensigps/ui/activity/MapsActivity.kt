@@ -48,6 +48,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var sharedPref: PreferencesHelper
     private lateinit var userId: String
 
+    private val btnBack: FloatingActionButton by lazy { findViewById(R.id.fabBack) }
     private val btnMyLocation: FloatingActionButton by lazy { findViewById(R.id.fabMyLocation) }
     private val btnOfficeLocation: FloatingActionButton by lazy { findViewById(R.id.fabOfficeLocation) }
     private val btnPresence: MaterialButton by lazy { findViewById(R.id.btnPresence) }
@@ -132,6 +133,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     //button onClick
     private fun button() {
+
+        btnBack.setOnClickListener {
+            finish()
+        }
         btnMyLocation.setOnClickListener {
 
             if (myLocation == null) {

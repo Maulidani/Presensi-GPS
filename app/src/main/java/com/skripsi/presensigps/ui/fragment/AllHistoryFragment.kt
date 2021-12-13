@@ -18,7 +18,8 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class AllHistoryFragment(val s: String) : Fragment() {
+class AllHistoryFragment(val s: String) : Fragment(), ReportAdapter.IUserRecycler,
+    PresenceAdapter.IUserRecycler {
     private val rv: RecyclerView by lazy { requireActivity().findViewById(R.id.rv) }
     private lateinit var sharedPref: PreferencesHelper
 
@@ -55,7 +56,7 @@ class AllHistoryFragment(val s: String) : Fragment() {
 
                     if (status == true) {
 
-                        val adapter = data?.let { PresenceAdapter(it) }
+                        val adapter = data?.let { PresenceAdapter(it, this@AllHistoryFragment) }
                         rv.layoutManager = LinearLayoutManager(requireContext())
                         rv.adapter = adapter
 
@@ -94,7 +95,7 @@ class AllHistoryFragment(val s: String) : Fragment() {
 
                     if (status == true) {
 
-                        val adapter = data?.let { ReportAdapter(it) }
+                        val adapter = data?.let { ReportAdapter(it, this@AllHistoryFragment) }
                         rv.layoutManager = LinearLayoutManager(requireContext())
                         rv.adapter = adapter
 
@@ -119,6 +120,17 @@ class AllHistoryFragment(val s: String) : Fragment() {
             }
 
         })
+    }
+
+    override fun refreshView(onUpdate: Boolean) {
+        when (s) {
+            "presence" -> {
+                showPresence()
+            }
+            "report" -> {
+                showReport()
+            }
+        }
     }
 
 }

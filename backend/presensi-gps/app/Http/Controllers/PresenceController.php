@@ -159,7 +159,7 @@ class PresenceController extends Controller
             ->first();
 
         $back->forceFill([
-            'back_at' =>date("H", strtotime('now')),
+            'back_at' => date("H", strtotime('now')),
             'status' => 1,
         ])->save();
 
@@ -235,9 +235,9 @@ class PresenceController extends Controller
             ->exists();
 
         if ($exist) {
-           $presence =  Presence::where('user_id', '=', $request->user()->id)
-            ->whereDate('created_at', today())
-            ->first();
+            $presence =  Presence::where('user_id', '=', $request->user()->id)
+                ->whereDate('created_at', today())
+                ->first();
 
             return response()->json([
                 'message' => 'Success',
@@ -251,5 +251,48 @@ class PresenceController extends Controller
                 'data_today' => null,
             ]);
         }
+    }
+
+    public function createPDF(Request $request)
+    {
+        $date = $request->date;
+        $month = $request->month;
+        $year = $request->year;
+
+        if ($date === 'today') {
+            $presence = Presence::join('users', 'presences.user_id', '=', 'users.id')
+                ->where('presences.status', 1)
+                ->where('presences.off', 0)
+                ->whereDate('presences.created_at', today())
+                ->get(['presences.*', 'users.name']);
+
+            return response()->json([
+                'message' => 'success',
+                'status' => true,
+                'data' => $presence,
+            ]);
+        } else {
+            $presence = Presence::join('users', 'presences.user_id', '=', 'users.id')
+                ->select('users.name')
+                ->selectRaw('count(users.name) as count')
+                ->where('presences.status', 1)
+                ->where('presences.off', 0)
+                ->whereMonth('presences.created_at', $month)
+                ->whereYear('presences.created_at', $year)
+                ->groupBy('users.name')
+                ->havingRaw('COUNT(users.name) > 0')
+                ->get();
+
+            return response()->json([
+                'message' => 'success',
+                'status' => true,
+                'data' => $presence,
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'success',
+            'status' => false,
+        ]);
     }
 }

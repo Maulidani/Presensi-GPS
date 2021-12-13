@@ -3,15 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:background="@drawable/bg"
     android:layout_height="match_parent"
+    android:id="@+id/parentPresence"
+    android:background="@drawable/bg"
     tools:context=".ui.activity.PresenceActivity">
 
     <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/icBack"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="24dp"
-        android:id="@+id/icBack"
         android:src="@drawable/ic_back"
         app:layout_constraintBottom_toBottomOf="@id/tvPresence"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -47,8 +48,8 @@
         android:layout_height="0dp"
         android:layout_marginTop="24dp"
         android:background="@drawable/bg_content"
-        android:paddingTop="24dp"
         android:paddingHorizontal="24dp"
+        android:paddingTop="24dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvPresence">
 
@@ -57,6 +58,44 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/parentPrintPdf"
+        android:layout_margin="32dp"
+        android:background="@color/light_gray"
+        android:padding="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/whenTextField"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Jadwal"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <AutoCompleteTextView
+                android:id="@+id/inputWhen"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"
+                tools:ignore="LabelFor" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPrintPDF"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/orange"
+            android:text="Cetak"
+            android:textColor="@color/white"
+            app:layout_constraintTop_toBottomOf="@+id/whenTextField" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

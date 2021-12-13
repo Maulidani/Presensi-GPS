@@ -73,7 +73,6 @@ interface ApiService {
     ): Call<ResponseModel>
 
     @FormUrlEncoded
-
     @POST("verify-presence")
     fun apiVerifyPresence(
         @Field("id") id: Int,
@@ -107,6 +106,28 @@ interface ApiService {
         @Part("latitude") latitude: RequestBody,
         @Part("longitude") longitude: RequestBody,
         @Part("note") note: RequestBody,
+        @Part image: MultipartBody.Part,
+    ): Call<ResponseModel>
+
+    @FormUrlEncoded
+    @POST("create-pdf-presence")
+    fun apiCreatePdfPresence(
+        @Field("date") date: String,
+        @Field("month") month: String,
+        @Field("year") year: String,
+    ): Call<ResponseModel>
+
+    @FormUrlEncoded
+    @POST("create-pdf-report")
+    fun apiCreatePdfReport(
+        @Field("date") date: String,
+        @Field("month") month: String,
+        @Field("year") year: String,
+    ): Call<ResponseModel>
+
+    @Multipart
+    @POST("off-presence")
+    fun apiOffSakit(
         @Part image: MultipartBody.Part,
     ): Call<ResponseModel>
 }

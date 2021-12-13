@@ -20,10 +20,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PresensiGPS"
         android:usesCleartextTraffic="true">
-        <activity android:name=".ui.activity.SendReportActivity"></activity>
-        <activity android:name=".ui.activity.PhotoActivity" />
-        <activity android:name=".ui.activity.AllHistoryActivity" />
-        <activity android:name=".ui.activity.MainActivity" />
+        <activity
+            android:name=".ui.activity.SendReportActivity"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".ui.activity.PhotoActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.AllHistoryActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.MainActivity"
+            android:screenOrientation="portrait" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -42,18 +50,43 @@
         <activity
             android:name=".ui.activity.MapsActivity"
             android:label="@string/title_activity_maps" />
-        <activity android:name=".ui.activity.UserActivity" />
-        <activity android:name=".ui.activity.PresenceActivity" />
-        <activity android:name=".ui.activity.ViewPhotoActivity" />
-        <activity android:name=".ui.activity.ReportActivity" />
-        <activity android:name=".ui.activity.AdminManagerMainActivity" />
-        <activity android:name=".ui.activity.AddUserActivity" />
-        <activity android:name=".ui.activity.EditPhotoActivity" />
-        <activity android:name=".ui.activity.EditProfileActivity" />
-        <activity android:name=".ui.activity.ProfileActivity" />
-        <activity android:name=".ui.activity.SalesMainActivity" />
-        <activity android:name=".ui.activity.LoginActivity" />
-        <activity android:name=".SplashScreenActivity">
+        <activity
+            android:name=".ui.activity.UserActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.PresenceActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.ViewPhotoActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.ReportActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.AdminManagerMainActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.AddUserActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.EditPhotoActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.EditProfileActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.ProfileActivity"
+            android:noHistory="true"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.SalesMainActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.LoginActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".SplashScreenActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

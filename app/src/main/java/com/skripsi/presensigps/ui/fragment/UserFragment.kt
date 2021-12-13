@@ -31,7 +31,10 @@ class UserFragment(val s: String) : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        //
+        when (s) {
+            "sales" -> showUser("sales")
+            "manager" -> showUser("manager")
+        }
     }
 
     override fun onResume() {

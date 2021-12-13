@@ -27,7 +27,10 @@ import java.sql.Date
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
 
-class ReportAdapter(private val list: List<DataModel>) :
+class ReportAdapter(
+    private val list: List<DataModel>,
+    private val mListener: ReportAdapter.IUserRecycler
+) :
     RecyclerView.Adapter<ReportAdapter.ReportViewlHoder>() {
 
     inner class ReportViewlHoder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -121,7 +124,7 @@ class ReportAdapter(private val list: List<DataModel>) :
                             val status = response.body()?.status
 
                             if (status == true) {
-                                //success
+                                mListener.refreshView(true)
                             } else {
                                 Toast.makeText(itemView.context, "Gagal", Toast.LENGTH_SHORT).show()
                             }
@@ -156,4 +159,8 @@ class ReportAdapter(private val list: List<DataModel>) :
     }
 
     override fun getItemCount(): Int = list.size
+
+    interface IUserRecycler {
+        fun refreshView(onUpdate: Boolean)
+    }
 }

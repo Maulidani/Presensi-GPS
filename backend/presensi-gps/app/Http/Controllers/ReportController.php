@@ -136,4 +136,45 @@ class ReportController extends Controller
             ]);
         }
     }
+
+    public function createPDF(Request $request)
+    {
+        $date = $request->date;
+        $month = $request->month;
+        $year = $request->year;
+
+        if ($date === 'today') {
+            $presence = Report::join('users', 'reports.user_id', '=', 'users.id')
+                ->where('reports.status', 1)
+                ->whereDate('reports.created_at', today())
+                ->get(['reports.*', 'users.name']);
+
+            return response()->json([
+                'message' => 'success',
+                'status' => true,
+                'data' => $presence,
+            ]);
+        } else {
+            $presence = Report::join('users', 'reports.user_id', '=', 'users.id')
+                ->select('users.name')
+                ->selectRaw('count(users.name) as count')
+                ->where('reports.status', 1)
+                ->whereMonth('reports.created_at', $month)
+                ->whereYear('reports.created_at', $year)
+                ->groupBy('users.name')
+                ->havingRaw('COUNT(users.name) > 0')
+                ->get();
+
+            return response()->json([
+                'message' => 'success',
+                'status' => true,
+                'data' => $presence,
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'success',
+            'status' => false,
+        ]);
+    }
 }

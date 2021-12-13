@@ -28,7 +28,9 @@ import java.sql.Date
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
 
-class PresenceAdapter(private val list: List<DataModel>) :
+class PresenceAdapter(
+    private val list: List<DataModel>, private val mListener: IUserRecycler
+) :
     RecyclerView.Adapter<PresenceAdapter.PresenceViewlHoder>() {
 
     inner class PresenceViewlHoder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -46,6 +48,7 @@ class PresenceAdapter(private val list: List<DataModel>) :
             val name = itemView.findViewById<TextView>(R.id.tvName)
             val date = itemView.findViewById<TextView>(R.id.tvDate)
             val time = itemView.findViewById<TextView>(R.id.tvTime)
+            val infoTime = itemView.findViewById<TextView>(R.id.tvInfoTimePresence)
             val workTime = itemView.findViewById<TextView>(R.id.tvTimePresence)
             val item = itemView.findViewById<CardView>(R.id.itemCard)
 
@@ -81,8 +84,13 @@ class PresenceAdapter(private val list: List<DataModel>) :
             if (result.status == 0) {
                 statusVerified.visibility = View.INVISIBLE
 
-                if (result.off == 1) {
+                if (result.off == 0) {
                     statusNotVerified.visibility = View.VISIBLE
+                    statusNotVerified.setText("Belum Pulang")
+                } else {
+                    statusNotVerified.visibility = View.VISIBLE
+                    workTime.text = "off/sakit"
+                    infoTime.visibility = View.INVISIBLE
                     if (userPosition == "manager") {
                         item.setOnClickListener {
                             verificationAlert(result)
@@ -92,6 +100,8 @@ class PresenceAdapter(private val list: List<DataModel>) :
             } else {
                 statusNotVerified.visibility = View.INVISIBLE
                 if (result.off == 1) {
+                    infoTime.visibility = View.INVISIBLE
+                    workTime.text = "off/sakit"
                     statusVerified.visibility = View.VISIBLE
                 }
 
@@ -101,7 +111,7 @@ class PresenceAdapter(private val list: List<DataModel>) :
         private fun verificationAlert(result: DataModel) {
             val builder = AlertDialog.Builder(itemView.context)
             builder.setTitle("Verifikasi")
-            builder.setMessage("verifikasi Laporan ${result.name} ?")
+            builder.setMessage("verifikasi off/sakit ${result.name} ?")
 
             builder.setPositiveButton("Ya") { _, _ ->
                 verify(result)
@@ -126,7 +136,7 @@ class PresenceAdapter(private val list: List<DataModel>) :
                             val status = response.body()?.status
 
                             if (status == true) {
-                                //success
+                                mListener.refreshView(true)
                             } else {
                                 Toast.makeText(itemView.context, "Gagal", Toast.LENGTH_SHORT).show()
                             }
@@ -161,4 +171,8 @@ class PresenceAdapter(private val list: List<DataModel>) :
     }
 
     override fun getItemCount(): Int = list.size
+
+    interface IUserRecycler {
+        fun refreshView(onUpdate: Boolean)
+    }
 }

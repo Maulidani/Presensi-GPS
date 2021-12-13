@@ -17,7 +17,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class PresenceFragment(val s:String) : Fragment() {
+class PresenceFragment(val s: String) : Fragment(), PresenceAdapter.IUserRecycler {
     private val rv: RecyclerView by lazy { requireActivity().findViewById(R.id.rvPresence) }
 
     override fun onCreateView(
@@ -36,10 +36,8 @@ class PresenceFragment(val s:String) : Fragment() {
 
     override fun onResume() {
         super.onResume()
-//        when (s) {
-//            "today" -> Toast.makeText(requireActivity(), s, Toast.LENGTH_SHORT).show()
-//            "all" -> Toast.makeText(requireActivity(), s, Toast.LENGTH_SHORT).show()
-//        }
+        show()
+
     }
 
     private fun show() {
@@ -54,7 +52,7 @@ class PresenceFragment(val s:String) : Fragment() {
 
                     if (status == true) {
 
-                        val adapter = data?.let { PresenceAdapter(it) }
+                        val adapter = data?.let { PresenceAdapter(it,this@PresenceFragment) }
                         rv.layoutManager = LinearLayoutManager(requireContext())
                         rv.adapter = adapter
 
@@ -79,5 +77,9 @@ class PresenceFragment(val s:String) : Fragment() {
             }
 
         })
+    }
+
+    override fun refreshView(onUpdate: Boolean) {
+        show()
     }
 }

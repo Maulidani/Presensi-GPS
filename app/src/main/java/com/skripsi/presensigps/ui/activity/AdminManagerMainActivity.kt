@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -37,7 +38,11 @@ class AdminManagerMainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_admin_manager_main)
         sharedPref = PreferencesHelper(this)
+        val userPosition = sharedPref.getString(Constant.PREF_USER_POSITION)
 
+        if (userPosition == "manager") {
+            userMenu.visibility = View.GONE
+        }
         setting.setOnClickListener {
 
             val builder: AlertDialog.Builder = AlertDialog.Builder(this)
@@ -57,8 +62,18 @@ class AdminManagerMainActivity : AppCompatActivity() {
                         )
                     }
                     1 -> {
-                        logout()
-                    }
+                        val builder = AlertDialog.Builder(this)
+                        builder.setMessage("Keluar/Logout?")
+
+                        builder.setPositiveButton("Ya") { _, _ ->
+                            logout()
+
+                        }
+
+                        builder.setNegativeButton("Tidak") { _, _ ->
+                            // cancel
+                        }
+                        builder.show()                    }
                 }
             }
             val dialog: AlertDialog = builder.create()

@@ -39,11 +39,14 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('delete-presence', [PresenceController::class, 'deletePresence']);
     Route::get('location-presence', [PresenceController::class, 'getLocation']);
     Route::get('get-presence-today', [PresenceController::class, 'getPresenceTOday']);
+    Route::post('create-pdf-presence', [PresenceController::class, 'createPDF']);
 
     //report
     Route::post('show-report', [ReportController::class, 'showReport']);
     Route::post('add-report', [ReportController::class, 'addReport']);
     Route::post('verify-report', [ReportController::class, 'verificationReport']);
     Route::post('delete-report', [ReportController::class, 'deleteReport']);
+    Route::post('create-pdf-report', [ReportController::class, 'createPDF']);
+
 
 });

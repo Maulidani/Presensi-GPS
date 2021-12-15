@@ -381,7 +381,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             } else {
                                 Toast.makeText(
                                     applicationContext,
-                                    "anda diluar jarak kantor" + response.code().toString(),
+                                    "Anda diluar jarak kantor",
                                     Toast.LENGTH_SHORT
                                 ).show()
                                 Log.e("distance:", "  diluar kawasan")

@@ -379,6 +379,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                         startForProfileImageResult.launch(intent)
                                     }
                             } else {
+                                Toast.makeText(
+                                    applicationContext,
+                                    "anda diluar jarak kantor" + response.code().toString(),
+                                    Toast.LENGTH_SHORT
+                                ).show()
                                 Log.e("distance:", "  diluar kawasan")
                             }
                         }

@@ -3,7 +3,8 @@ package com.skripsi.presensigps.utils
 class Constant {
     companion object {
 
-        const val BASE_URL = "http://192.168.70.5:8000/"
+//        const val BASE_URL = "http://192.168.43.9:8000/"
+        const val BASE_URL = "https://presensi-gps.000webhostapp.com/presensi-gps/public/"
         const val URL_IMG_USER = BASE_URL + "image/user/"
         const val URL_IMG_PRESENCE = BASE_URL + "image/presence/"
         const val URL_IMG_REPORT = BASE_URL + "image/report/"

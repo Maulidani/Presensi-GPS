@@ -3,6 +3,7 @@ package com.skripsi.presensigps.ui.activity
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.ProgressDialog
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
@@ -44,6 +45,7 @@ import java.io.File
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private val TAG = this.toString()
+    private lateinit var progressDialog: ProgressDialog
 
     private lateinit var sharedPref: PreferencesHelper
     private lateinit var userId: String
@@ -72,6 +74,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private var cameraZoom: Boolean = false
     private var distance: Float = 0.1f
 
+    private var type = ""
+    private var intentLat = ""
+    private var intentLng = ""
+
     private var reqBody: RequestBody? = null
     private var partImage: MultipartBody.Part? = null
 
@@ -80,17 +86,24 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             super.onLocationResult(locationResultCallback)
 
             locationResult = locationResultCallback
+
             myLocation =
-                LatLng(locationResult.locations[0].latitude, locationResult.locations[0].longitude)
+                LatLng(
+                    locationResult.locations[0].latitude,
+                    locationResult.locations[0].longitude
+                )
 
             setLatLng(
                 locationResult.locations[0].latitude, locationResult.locations[0].longitude
             )
+
+
         }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
+
     }
 
     private fun setLatLng(myLatitude: Double, myLongitude: Double) {
@@ -108,6 +121,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         mMap.clear()
         mMap.addMarker(MarkerOptions().position(myLocation).title("Lokasi Saya"))
+
+        progressDialog.dismiss()
 
         val circleOptions = CircleOptions()
         circleOptions.center(officeLocation)
@@ -171,8 +186,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    lateinit var type: String
-
     //lifecycle
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -182,12 +195,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
+        progressDialog = ProgressDialog(this)
+        progressDialog.setTitle("Loading")
+        progressDialog.setMessage("memuat informasi...")
+        progressDialog.setCancelable(false)
+        progressDialog.show()
+
         sharedPref = PreferencesHelper(this)
 //        userId = sharedPref.getString(Constant.PREF_USER_ID).toString()
 
         type = intent.getStringExtra("type").toString()
+        intentLat = intent.getStringExtra("latitude").toString()
+        intentLng = intent.getStringExtra("longitude").toString()
 
         if (type == "report") {
+
             btnOfficeLocation.visibility = View.GONE
             btnPresence.visibility = View.INVISIBLE
             btnReport.visibility = View.VISIBLE
@@ -207,6 +229,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             btnPresence.visibility = View.VISIBLE
             btnReport.visibility = View.GONE
 
+        } else {
+
+            btnPresence.visibility = View.GONE
+            btnReport.visibility = View.GONE
+
+            btnMyLocation.visibility = View.GONE
+            btnOfficeLocation.visibility = View.GONE
         }
 
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
@@ -332,6 +361,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     val data = response.body()?.data_today
 
                     if (status == true) {
+
+//                        progressDialog.dismiss()
 
                         latOffice = data?.latitude!!
                         longOffice = data.longitude

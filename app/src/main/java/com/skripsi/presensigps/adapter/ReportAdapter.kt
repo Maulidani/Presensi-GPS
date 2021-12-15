@@ -15,7 +15,7 @@ import com.skripsi.presensigps.R
 import com.skripsi.presensigps.network.ApiClient
 import com.skripsi.presensigps.network.DataModel
 import com.skripsi.presensigps.network.ResponseModel
-import com.skripsi.presensigps.network.UserModel
+import com.skripsi.presensigps.ui.activity.MapsInfoActivity
 import com.skripsi.presensigps.ui.activity.PhotoActivity
 import com.skripsi.presensigps.utils.Constant
 import com.skripsi.presensigps.utils.PreferencesHelper
@@ -68,6 +68,23 @@ class ReportAdapter(
             latitude.text = result.latitude.toString()
             longitude.text = result.longitude.toString()
             note.text = result.note
+
+            latitude.setOnClickListener {
+                ContextCompat.startActivity(
+                    itemView.context, Intent(itemView.context, MapsInfoActivity::class.java)
+                        .putExtra("type", "detail_report")
+                        .putExtra("latitude", latitude.text.toString())
+                        .putExtra("longitude", longitude.text.toString()), null
+                )
+            }
+            longitude.setOnClickListener {
+                ContextCompat.startActivity(
+                    itemView.context, Intent(itemView.context, MapsInfoActivity::class.java)
+                        .putExtra("type", "detail_report")
+                        .putExtra("latitude", latitude.text.toString())
+                        .putExtra("longitude", longitude.text.toString()), null
+                )
+            }
 
             img.setOnClickListener {
                 ContextCompat.startActivity(

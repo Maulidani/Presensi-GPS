@@ -85,6 +85,7 @@ class PresenceAdapter(
                 statusVerified.visibility = View.INVISIBLE
 
                 if (result.off == 0) {
+                    workTime.text = "--:--"
                     statusNotVerified.visibility = View.VISIBLE
                     statusNotVerified.setText("Belum Pulang")
                 } else {

@@ -20,6 +20,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputEditText
 import com.skripsi.presensigps.R
 import com.skripsi.presensigps.network.ApiClient
 import com.skripsi.presensigps.network.DataModel
@@ -49,6 +50,7 @@ class PresenceActivity : AppCompatActivity() {
     val btnPrint: MaterialButton by lazy { findViewById(R.id.btnPrint) }
     val btnPrintPDF: MaterialButton by lazy { findViewById(R.id.btnPrintPDF) }
     val inputWhen: AutoCompleteTextView by lazy { findViewById(R.id.inputWhen) }
+    val inputYear: TextInputEditText by lazy { findViewById(R.id.inputYear) }
     private val itemCetak = listOf(
         "hari ini",
         "januari",
@@ -83,15 +85,15 @@ class PresenceActivity : AppCompatActivity() {
             parentPrintPDF.visibility = View.GONE
         }
 
-
         val adapterCetak =
             ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, itemCetak)
         inputWhen.setAdapter(adapterCetak)
 
         btnPrintPDF.setOnClickListener {
             val sWhen = inputWhen.text.toString()
+            val sYear = inputYear.text.toString()
 
-            if (!inputWhen.text.isNullOrEmpty()) {
+            if (!inputWhen.text.isNullOrEmpty() && !inputYear.text.isNullOrEmpty()) {
                 var whenReport = ""
                 when (sWhen) {
                     "hari ini" -> whenReport = "today"
@@ -108,7 +110,7 @@ class PresenceActivity : AppCompatActivity() {
                     "november" -> whenReport = "11"
                     "desember" -> whenReport = "12"
                 }
-                printPresence(whenReport, sWhen, "presence")
+                printPresence(whenReport, sWhen, "presence", sYear)
             } else {
                 Toast.makeText(
                     applicationContext,
@@ -126,9 +128,8 @@ class PresenceActivity : AppCompatActivity() {
         }
     }
 
-    private fun printPresence(whenReport: String, sWhen: String, type: String) {
+    private fun printPresence(whenReport: String, sWhen: String, type: String, sYear: String) {
 
-        val sYear = "2021"
         ApiClient.SetContext(this).instances.apiCreatePdfPresence(whenReport, whenReport, sYear)
             .enqueue(object :
                 Callback<ResponseModel> {

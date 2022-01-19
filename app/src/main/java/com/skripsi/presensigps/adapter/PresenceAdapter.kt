@@ -1,6 +1,7 @@
 package com.skripsi.presensigps.adapter
 
 import android.content.Intent
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -65,13 +66,21 @@ class PresenceAdapter(
                 SimpleDateFormat("H")
 
             val sumWorkTime = result.back_at - timeH.format(dateCreatedAt).toInt()
-            workTime.text = sumWorkTime.toString()
+            if (sumWorkTime >= 8) {
+                workTime.text = "8"
+            } else {
+                workTime.text = sumWorkTime.toString()
+            }
 
             Picasso.with(itemView.context).load("${Constant.URL_IMG_PRESENCE}${result.image}")
                 .into(img)
             name.text = result.name
             date.text = simpleDateFormat.format(dateCreatedAt).toString()
             time.text = simpleDateFormatTime.format(dateCreatedAt).toString()
+
+            Log.e("in: ", timeH.format(dateCreatedAt).toInt().toString())
+            Log.e("back: ", result.back_at.toString())
+            Log.e("hasil: ", sumWorkTime.toString())
 
             img.setOnClickListener {
                 startActivity(

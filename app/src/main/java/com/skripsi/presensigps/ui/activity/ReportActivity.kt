@@ -20,12 +20,12 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputEditText
 import com.skripsi.presensigps.R
 import com.skripsi.presensigps.network.ApiClient
 import com.skripsi.presensigps.network.DataModel
 import com.skripsi.presensigps.network.ResponseModel
 import com.skripsi.presensigps.ui.fragment.ReportFragment
-import com.skripsi.presensigps.ui.fragment.ReportViewPagerFragment
 import com.skripsi.presensigps.utils.Constant
 import com.skripsi.presensigps.utils.PreferencesHelper
 import retrofit2.Call
@@ -47,6 +47,7 @@ class ReportActivity : AppCompatActivity() {
     val btnPrint: MaterialButton by lazy { findViewById(R.id.btnPrint) }
     val btnPrintPDF: MaterialButton by lazy { findViewById(R.id.btnPrintPDF) }
     val inputWhen: AutoCompleteTextView by lazy { findViewById(R.id.inputWhen) }
+    val inputYear: TextInputEditText by lazy { findViewById(R.id.inputYear) }
     private val itemCetak = listOf(
         "hari ini",
         "januari",
@@ -88,6 +89,8 @@ class ReportActivity : AppCompatActivity() {
 
         btnPrintPDF.setOnClickListener {
             val sWhen = inputWhen.text.toString()
+            val sYear = inputYear.text.toString()
+
             if (!inputWhen.text.isNullOrEmpty()) {
                 var whenReport = ""
                 when (sWhen) {
@@ -105,7 +108,7 @@ class ReportActivity : AppCompatActivity() {
                     "november" -> whenReport = "11"
                     "desember" -> whenReport = "12"
                 }
-                printReport(whenReport, sWhen, "report")
+                printReport(whenReport, sWhen, "report",sYear)
             } else {
                 Toast.makeText(
                     applicationContext,
@@ -115,9 +118,8 @@ class ReportActivity : AppCompatActivity() {
             }
         }
     }
-    private fun printReport(whenReport: String, sWhen: String, type: String) {
+    private fun printReport(whenReport: String, sWhen: String, type: String, sYear: String) {
 
-        val sYear = "2021"
         ApiClient.SetContext(this).instances.apiCreatePdfReport(whenReport, whenReport, sYear)
             .enqueue(object :
                 Callback<ResponseModel> {
